@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Open.OAuth2" Version="1.0.0-CI00001" />
+    <PackageReference Include="Open.OAuth2" Version="1.0.0-CI00002" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,13 +16,13 @@ namespace Open.Facebook.Tests
         {
             string accessToken = "";
             var client = new FacebookClient(accessToken);
-            System.IO.Stream fileStream = null;
+            var fileStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Open.Facebook.Tests.Resources.Manzanas.jpg");
             var progressList = new List<StreamProgress>();
             var progress = new Progress<StreamProgress>(p =>
             {
                 progressList.Add(p);
             });
-            var photo = await client.UploadPhotoAsync("", "", fileStream, progress, CancellationToken.None);
+            var photo = await client.UploadPhotoAsync("324401171078139", "testing", fileStream, progress, CancellationToken.None);
             Assert.IsTrue(progressList.Count > 0);
         }
     }
