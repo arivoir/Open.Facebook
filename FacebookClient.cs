@@ -341,16 +341,16 @@ namespace Open.Facebook
             }
         }
 
-        public async Task<UploadedPhoto> UploadPhotoAsync(string albumId, string name, double latitude, double longitude, Stream fileStream, IProgress<StreamProgress> progress, CancellationToken cancellationToken)
+        public async Task<UploadedPhoto> UploadPhotoAsync(string albumId, string message, Stream fileStream, IProgress<StreamProgress> progress, CancellationToken cancellationToken)
         {
             var parameters = new Dictionary<string, string>();
-            if (!string.IsNullOrWhiteSpace(name))
-                parameters.Add("message", name);
+            if (!string.IsNullOrWhiteSpace(message))
+                parameters.Add("message", message);
             var uri = BuildApiUri(string.Format("{0}/photos", albumId), parameters);
             var client = CreateClient();
             var content = new MultipartFormDataContent();
             content.Add(new StreamedContent(fileStream, progress, cancellationToken), "file", "file.jpeg");//"image/jpeg"
-            var response = await client.PostAsync(uri, content, cancellationToken);//.AsTask(cancellationToken, progress);
+            var response = await client.PostAsync(uri, content, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadJsonAsync<UploadedPhoto>();
