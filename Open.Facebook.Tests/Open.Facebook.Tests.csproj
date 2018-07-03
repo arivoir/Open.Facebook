@@ -72,7 +72,7 @@
       <Version>2.0.3</Version>
     </PackageReference>
     <PackageReference Include="Open.OAuth2">
-      <Version>1.0.0-CI00002</Version>
+      <Version>1.0.0-CI00003</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
