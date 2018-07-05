@@ -4,6 +4,7 @@
     <TargetFramework>netstandard1.3</TargetFramework>
     <Authors>Alvaro Rivoir</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>.Net Standard Facebook library (photos and albums)</Description>
   </PropertyGroup>
 
   <ItemGroup>
