@@ -18,17 +18,22 @@ namespace Open.Facebook
     {
         #region ** fields
 
-        private static readonly string ApiServiceUri = "https://graph.facebook.com/v2.6/";
-        private static readonly string OAuthUri = "https://graph.facebook.com/v2.6/oauth/access_token";
+        private const string CurrentVersion = "v3.0";
+        private static readonly string ApiServiceUri = "https://graph.facebook.com/{0}/";
+        private static readonly string OAuthUri = "https://graph.facebook.com/{0}/oauth/access_token";
         private string _accessToken = null;
+        private string _version;
+        private IHttpMessageHandlerFactory _messageHandlerFactory;
 
         #endregion
 
         #region ** initialization
 
-        public FacebookClient(string accessToken)
+        public FacebookClient(string accessToken, string version = CurrentVersion, IHttpMessageHandlerFactory messageHandlerFactory = null)
         {
             _accessToken = accessToken;
+            _version = version;
+            _messageHandlerFactory = messageHandlerFactory ?? HttpMessageHandlerFactory.Default;
         }
 
         #endregion
@@ -40,10 +45,10 @@ namespace Open.Facebook
             return OAuth2Client.GetRequestUrl("https://www.facebook.com/dialog/oauth", clientId, scope, callbackUrl, "token", new Dictionary<string, string> { { "display", display }, { "auth_type", auth_type } });
         }
 
-        public static async Task<OAuth2Token> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret)
+        public static async Task<OAuth2Token> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string version = CurrentVersion)
         {
 
-            var uri = new Uri(OAuthUri);
+            var uri = new Uri(string.Format(OAuthUri, version));
             var client = new HttpClient();
             var entry = string.Format(@"client_id={1}&client_secret={2}&grant_type=fb_exchange_token&fb_exchange_token={0}",
                                         code,
@@ -64,19 +69,6 @@ namespace Open.Facebook
             {
                 throw await ProcessException(response.Content);
             }
-        }
-
-        /// <summary>
-        /// Build the API service URI.
-        /// </summary>
-        /// <param name="path">The relative path requested.</param>
-        /// <returns>The request URI.</returns>
-        private Uri BuildApiUri(string path, IDictionary<string, string> parameters = null)
-        {
-            UriBuilder builder = new UriBuilder(ApiServiceUri);
-            builder.Path += path;
-            builder.Query = (parameters != null && parameters.Count() > 0 ? string.Join("&", parameters.Select(pair => pair.Key + "=" + Uri.EscapeDataString(pair.Value)).ToArray()) + "&" : "") + "access_token=" + Uri.EscapeUriString(_accessToken);
-            return builder.Uri;
         }
 
         #endregion
@@ -437,9 +429,22 @@ namespace Open.Facebook
 
         #region ** private stuff
 
-        private static HttpClient CreateClient()
+        /// <summary>
+        /// Build the API service URI.
+        /// </summary>
+        /// <param name="path">The relative path requested.</param>
+        /// <returns>The request URI.</returns>
+        private Uri BuildApiUri(string path, IDictionary<string, string> parameters = null)
         {
-            var client = new HttpClient(new RetryMessageHandler());
+            UriBuilder builder = new UriBuilder(string.Format(ApiServiceUri, _version));
+            builder.Path += path;
+            builder.Query = (parameters != null && parameters.Count() > 0 ? string.Join("&", parameters.Select(pair => pair.Key + "=" + Uri.EscapeDataString(pair.Value)).ToArray()) + "&" : "") + "access_token=" + Uri.EscapeUriString(_accessToken);
+            return builder.Uri;
+        }
+
+        private HttpClient CreateClient()
+        {
+            var client = new HttpClient(new RetryMessageHandler(_messageHandlerFactory.GetHttpMessageHandler()));
             client.Timeout = Timeout.InfiniteTimeSpan;
             return client;
         }
